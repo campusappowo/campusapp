@@ -7,12 +7,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-interface UserInterface{
-  uid : string,
-  password : string,
-  email? : string
-}
-
 app.get("/", (req,res) => {
   res.json({
     msg: "Hello"
