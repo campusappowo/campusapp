@@ -5,16 +5,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const lmsapiRouter_1 = require("./routes/lmsapiRouter");
+const lmsapiRouter_1 = require("./routes/lmsapi/lmsapiRouter");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
+const PORT = process.env.PORT || 3000;
 app.get("/", (req, res) => {
     res.json({
         msg: "Hello"
     });
 });
 app.use("/lmsapi", lmsapiRouter_1.lmsapiRouter);
-app.listen(3000, () => {
-    console.log("server started on 3000");
+app.listen(PORT, () => {
+    console.log(`server started on ${PORT}`);
 });

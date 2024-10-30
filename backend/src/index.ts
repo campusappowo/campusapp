@@ -1,11 +1,13 @@
 import express from "express";
 import cors from "cors";
-import { lmsapiRouter } from "./routes/lmsapiRouter";
+import { lmsapiRouter } from "./routes/lmsapi/lmsapiRouter";
 import { User } from "./db/user";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+const PORT = process.env.PORT || 3000;
 
 app.get("/", (req,res) => {
   res.json({
@@ -15,7 +17,7 @@ app.get("/", (req,res) => {
 
 app.use("/lmsapi", lmsapiRouter);
 
-app.listen(3000, () => {
-  console.log("server started on 3000");
+app.listen(PORT, () => {
+  console.log(`server started on ${PORT}`);
 })
 

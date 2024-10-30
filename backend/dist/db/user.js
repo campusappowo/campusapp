@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const { Schema } = mongoose_1.default;
-mongoose_1.default.connect("mongodb://localhost:27018/campusapp");
+mongoose_1.default.connect("mongodb://localhost:27017/campusapp");
 const userSchema = new Schema({
     uid: String,
     email: String,

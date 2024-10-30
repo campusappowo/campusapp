@@ -1,16 +1,28 @@
 import express from "express";
-import puppeteer, { Browser, Page } from "puppeteer";
-import jwt from "jsonwebtoken"
+import { Browser, Page } from "puppeteer";
 import { v4 as uuidv4 } from "uuid";
 import createBrowserAndPage from "./lmsapiHelpers/createBrowserAndPage";
 import { buildTimetable } from "./lmsapiHelpers/buildTimetable";
-
 
 export const lmsapiRouter = express.Router();
 
 const sessions = new Map<string, { browser: Browser; page: Page }>();
 
-lmsapiRouter.post("/startSession", async (req, res) => {
+lmsapiRouter.get("/", [startSession, getCaptcha] , async (req : express.Request ,res : any) => {
+    res.send(res.session);
+    console.log("captured captcha please respond with post.")
+})
+
+lmsapiRouter.post("/", [submitCaptcha], (req : express.Request, res : any) => {
+    console.log("Finished getting student details and shit");
+    res.send({
+        UID : res.UID,
+        Name : res.Name,
+        Timetable : res.Timetable
+    });
+})
+
+async function startSession(req : express.Request ,res : any ,next : express.NextFunction) {
     const sessionId = uuidv4(); // Generate a random sessionId using UUID
 
     const { browser, page } = await createBrowserAndPage();
@@ -19,13 +31,16 @@ lmsapiRouter.post("/startSession", async (req, res) => {
     sessions.set(sessionId, { browser, page });
 
     console.log(`Session started for: ${sessionId}`);
-    res.json({ sessionId, message: `Session started for ${sessionId}` });
-})
+    res.session = sessionId;
+    next();
+    // res.json({ sessionId, message: `Session started for ${sessionId}` });
 
-lmsapiRouter.post("/", async (req, res) => {
+}
+
+async function getCaptcha(req : express.Request ,res : any ,next : express.NextFunction) {
     const { sessionId, userId, password } = req.body;
-    const session = sessions.get(sessionId);
-  
+    const session = sessions.get(res.session);
+
     if (!session) {
       return res.status(400).json({ error: "Session not found" });
     }
@@ -44,12 +59,12 @@ lmsapiRouter.post("/", async (req, res) => {
     const captchaBuffer = await captchaElement?.screenshot();
   
     await captchaElement?.screenshot({ path: "captcha.png" });
-  
-    res.type("image/png").send(captchaBuffer);
     console.log("Captcha sent to client");
-});
 
-lmsapiRouter.post("/studentDetails", async (req, res) => {
+    next();
+}
+
+async function submitCaptcha(req : express.Request ,res : any ,next : express.NextFunction) {
     const { sessionId, captcha } = req.body;
     const session = sessions.get(sessionId);
   
@@ -90,15 +105,15 @@ lmsapiRouter.post("/studentDetails", async (req, res) => {
   
     const timetableObj = buildTimetable(timetableArray);
   
-    res.json({ UID: studentUID, Name: studentName, Timetable: timetableObj });
-  
+    res.UID = studentUID;
+    res.Name = studentName;
+    res.Timetable = timetableObj;
+
     // Optionally close the session after use
     await browser.close();
     sessions.delete(sessionId); // Clean up the session
   
     console.log("Session closed and removed");
-});
-  
-  
 
-  
+    next();
+}
