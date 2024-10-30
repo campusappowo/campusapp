@@ -3,10 +3,14 @@ import { Browser, Page } from "puppeteer";
 import { v4 as uuidv4 } from "uuid";
 import createBrowserAndPage from "./lmsapiHelpers/createBrowserAndPage";
 import { buildTimetable } from "./lmsapiHelpers/buildTimetable";
+import { config } from "dotenv";
 
 export const lmsapiRouter = express.Router();
 
 const sessions = new Map<string, { browser: Browser; page: Page }>();
+
+config();
+const baseUrl = process.env.BASE_URL || "";
 
 lmsapiRouter.get("/", [startSession, getCaptcha] , async (req : express.Request ,res : any) => {
     res.send(res.session);
@@ -38,7 +42,7 @@ async function startSession(req : express.Request ,res : any ,next : express.Nex
 }
 
 async function getCaptcha(req : express.Request ,res : any ,next : express.NextFunction) {
-    const { sessionId, userId, password } = req.body;
+    const { userId, password } = req.body;
     const session = sessions.get(res.session);
 
     if (!session) {
@@ -47,7 +51,7 @@ async function getCaptcha(req : express.Request ,res : any ,next : express.NextF
   
     const { page } = session;
   
-    await page.goto(`https://students.cuchd.in/`);
+    await page.goto(`${baseUrl}`);
     await page.type("#txtUserId", userId);
     await page.click("#btnNext");
     await page.waitForNavigation();
@@ -56,8 +60,7 @@ async function getCaptcha(req : express.Request ,res : any ,next : express.NextF
     await page.waitForSelector("#imgCaptcha");
   
     const captchaElement = await page.$("#imgCaptcha");
-    const captchaBuffer = await captchaElement?.screenshot();
-  
+    
     await captchaElement?.screenshot({ path: "captcha.png" });
     console.log("Captcha sent to client");
 
@@ -78,7 +81,7 @@ async function submitCaptcha(req : express.Request ,res : any ,next : express.Ne
     await page.click("#btnLogin");
     await page.waitForNavigation();
   
-    await page.goto(`https://students.cuchd.in/frmStudentProfile.aspx`);
+    await page.goto(`${baseUrl}frmStudentProfile.aspx`);
     await page.waitForSelector("#lbstuUID");
   
     const studentName = await page.$eval(
@@ -90,7 +93,7 @@ async function submitCaptcha(req : express.Request ,res : any ,next : express.Ne
       (el) => el.textContent?.trim() || ""
     );
   
-    await page.goto(`https://students.cuchd.in/frmMyTimeTable.aspx`);
+    await page.goto(`${baseUrl}frmMyTimeTable.aspx`);
     await page.waitForSelector("#ContentPlaceHolder1_grdMain");
   
     const timetableArray = await page.$$eval(
