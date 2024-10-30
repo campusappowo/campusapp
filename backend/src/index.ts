@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { lmsapiRouter } from "./routes/lmsapi/lmsapiRouter";
-import { User } from "./db/user";
+import { User } from "./db/db";
 
 const app = express();
 app.use(express.json());

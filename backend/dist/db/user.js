@@ -9,7 +9,7 @@ const { Schema } = mongoose_1.default;
 mongoose_1.default.connect("mongodb://localhost:27017/campusapp");
 const userSchema = new Schema({
     uid: String,
-    email: String,
+    email: { type: String, required: false },
     password: String
 });
 exports.User = mongoose_1.default.model("User", userSchema);

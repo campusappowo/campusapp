@@ -17,8 +17,12 @@ const express_1 = __importDefault(require("express"));
 const uuid_1 = require("uuid");
 const createBrowserAndPage_1 = __importDefault(require("./lmsapiHelpers/createBrowserAndPage"));
 const buildTimetable_1 = require("./lmsapiHelpers/buildTimetable");
+const dotenv_1 = require("dotenv");
+const db_1 = require("../../db/db");
 exports.lmsapiRouter = express_1.default.Router();
 const sessions = new Map();
+(0, dotenv_1.config)();
+const baseUrl = process.env.BASE_URL || "";
 exports.lmsapiRouter.get("/", [startSession, getCaptcha], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.send(res.session);
     console.log("captured captcha please respond with post.");
@@ -45,20 +49,37 @@ function startSession(req, res, next) {
 }
 function getCaptcha(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { sessionId, userId, password } = req.body;
+        const { userId, password } = req.body;
         const session = sessions.get(res.session);
         if (!session) {
             return res.status(400).json({ error: "Session not found" });
         }
+        console.log("before find");
+        const user = yield db_1.User.find({
+            uid: userId
+        });
+        console.log(user);
+        if (user.length != 0) {
+            console.log("in exists");
+            console.log("user already exists");
+        }
+        else {
+            console.log("in not exists");
+            const newUser = new db_1.User({
+                uid: userId,
+                password: password
+            });
+            yield newUser.save();
+            console.log("created!");
+        }
         const { page } = session;
-        yield page.goto(`https://students.cuchd.in/`);
+        yield page.goto(`${baseUrl}`);
         yield page.type("#txtUserId", userId);
         yield page.click("#btnNext");
         yield page.waitForNavigation();
         yield page.type("#txtLoginPassword", password);
         yield page.waitForSelector("#imgCaptcha");
         const captchaElement = yield page.$("#imgCaptcha");
-        const captchaBuffer = yield (captchaElement === null || captchaElement === void 0 ? void 0 : captchaElement.screenshot());
         yield (captchaElement === null || captchaElement === void 0 ? void 0 : captchaElement.screenshot({ path: "captcha.png" }));
         console.log("Captcha sent to client");
         next();
@@ -75,11 +96,11 @@ function submitCaptcha(req, res, next) {
         yield page.type("#txtcaptcha", captcha);
         yield page.click("#btnLogin");
         yield page.waitForNavigation();
-        yield page.goto(`https://students.cuchd.in/frmStudentProfile.aspx`);
+        yield page.goto(`${baseUrl}frmStudentProfile.aspx`);
         yield page.waitForSelector("#lbstuUID");
         const studentName = yield page.$eval("#ContentPlaceHolder1_lblName", (el) => { var _a; return ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || ""; });
         const studentUID = yield page.$eval("#lbstuUID", (el) => { var _a; return ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || ""; });
-        yield page.goto(`https://students.cuchd.in/frmMyTimeTable.aspx`);
+        yield page.goto(`${baseUrl}frmMyTimeTable.aspx`);
         yield page.waitForSelector("#ContentPlaceHolder1_grdMain");
         const timetableArray = yield page.$$eval("#ContentPlaceHolder1_grdMain tr", (rows) => {
             return rows.map((row) => {
@@ -91,6 +112,23 @@ function submitCaptcha(req, res, next) {
         res.UID = studentUID;
         res.Name = studentName;
         res.Timetable = timetableObj;
+        const TT = yield db_1.TimeTable.findOne({
+            uid: studentUID
+        });
+        if (TT) {
+            console.log(timetableObj);
+            console.log("found TT");
+            console.log(TT);
+        }
+        else {
+            const newTT = new db_1.TimeTable({
+                uid: studentUID,
+                name: studentName,
+                timetable: timetableObj
+            });
+            yield newTT.save();
+            console.log("new time table saved for " + studentUID);
+        }
         // Optionally close the session after use
         yield browser.close();
         sessions.delete(sessionId); // Clean up the session
