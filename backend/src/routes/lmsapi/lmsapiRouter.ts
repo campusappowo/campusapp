@@ -2,14 +2,13 @@ import express from "express";
 import { Browser, Page } from "puppeteer";
 import { v4 as uuidv4 } from "uuid";
 import createBrowserAndPage from "./lmsapiHelpers/createBrowserAndPage";
-import { buildTimetable } from "./lmsapiHelpers/buildTimetable";
 import { config } from "dotenv";
 import { TimeTable, User } from "../../db/db";
+import { getDetails } from "./lmsapiHelpers/getDetails";
 
 export const lmsapiRouter = express.Router();
 
 const sessions = new Map<string, { browser: Browser; page: Page }>();
-
 
 config();
 const baseUrl = process.env.BASE_URL || "";
@@ -100,37 +99,8 @@ async function submitCaptcha(req : express.Request ,res : any ,next : express.Ne
     }
   
     const { page, browser } = session;
-  
-    await page.type("#txtcaptcha", captcha);
-    await page.click("#btnLogin");
-    await page.waitForNavigation();
-  
-    await page.goto(`${baseUrl}frmStudentProfile.aspx`);
-    await page.waitForSelector("#lbstuUID");
-  
-    const studentName = await page.$eval(
-      "#ContentPlaceHolder1_lblName",
-      (el) => el.textContent?.trim() || ""
-    );
-    const studentUID = await page.$eval(
-      "#lbstuUID",
-      (el) => el.textContent?.trim() || ""
-    );
-  
-    await page.goto(`${baseUrl}frmMyTimeTable.aspx`);
-    await page.waitForSelector("#ContentPlaceHolder1_grdMain");
-  
-    const timetableArray = await page.$$eval(
-      "#ContentPlaceHolder1_grdMain tr",
-      (rows) => {
-        return rows.map((row) => {
-          const cells = Array.from(row.querySelectorAll("td, th"));
-          return cells.map((cell) => cell?.textContent?.trim() || "");
-        });
-      }
-    );
-  
-    const timetableObj = buildTimetable(timetableArray);
+
+    const { studentName, studentUID, timetableObj } = await getDetails(page, captcha, baseUrl)
   
     res.UID = studentUID;
     res.Name = studentName;
