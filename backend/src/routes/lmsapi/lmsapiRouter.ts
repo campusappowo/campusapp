@@ -3,7 +3,7 @@ import { Browser, Page } from "puppeteer";
 import { v4 as uuidv4 } from "uuid";
 import createBrowserAndPage from "./lmsapiHelpers/createBrowserAndPage";
 import { config } from "dotenv";
-import { TimeTable, User } from "../../db/db";
+import { User } from "../../db/db";
 import { getDetails } from "./lmsapiHelpers/getDetails";
 
 export const lmsapiRouter = express.Router();
@@ -30,6 +30,9 @@ lmsapiRouter.post("/", [submitCaptcha], (req : express.Request, res : any) => {
         Timetable : res.Timetable
     });
 })
+
+
+
 
 // Start Session Middleware, to create a new browser session for each user.
 async function startSession(req : express.Request ,res : any ,next : express.NextFunction) {
@@ -106,7 +109,7 @@ async function submitCaptcha(req : express.Request ,res : any ,next : express.Ne
     res.Name = studentName;
     res.Timetable = timetableObj;
 
-    const TT = await TimeTable.findOne({
+    const TT = await User.findOne({
       uid : studentUID
     });
 
@@ -114,7 +117,7 @@ async function submitCaptcha(req : express.Request ,res : any ,next : express.Ne
       
     }
     else {
-      const newTT = new TimeTable({
+      const newTT = new User({
         uid: studentUID,
         name : studentName,
         timetable : timetableObj

@@ -6,11 +6,7 @@ mongoose.connect("mongodb://localhost:27017/campusapp")
 const userSchema = new Schema({
     uid : String,
     email : { type: String, required: false },
-    password : String
-})
-
-const timetableSchema = new Schema({
-    uid : String,
+    password : String,
     name : String,
     timetable : {
         Mon : {
@@ -40,9 +36,8 @@ const timetableSchema = new Schema({
         Sun : {
             type : Map,
             of: String
-        },
+        }
     }
 })
 
 export const User = mongoose.model("User", userSchema);
-export const TimeTable = mongoose.model("TimeTable", timetableSchema);
