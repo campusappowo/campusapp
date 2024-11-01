@@ -12,14 +12,11 @@ dbRouter.get("/details", async (req,res) => {
     const user = await User.findOne({
         uid : '21BCS5724'
     })
-    const timetableResponse = await User.findOne({
-        uid: '21BCS5724'
-    })
 
     const timeTable = {
         day : today,
         // @ts-expect-error
-        schedule : (timetableResponse.timetable[today as keyof typeof timetableResponse.timetable])
+        schedule : (user.timetable[today as keyof typeof user.timetable])
     }
     
     res.json({user , timeTable});

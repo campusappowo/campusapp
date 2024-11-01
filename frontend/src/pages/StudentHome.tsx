@@ -6,6 +6,7 @@ export const StudentHome = () => {
 
     interface userDetails {
         uid : string,
+        name : string,
         password : string
     }
 
@@ -22,7 +23,8 @@ export const StudentHome = () => {
             const response = await axios.get("http://localhost:3000/dbapi/details");
             setUserData({
                 uid : response.data.user.uid,
-                password : response.data.user.password
+                password : response.data.user.password,
+                name : response.data.user.name
             });
             setTT({
                 day : response.data.timeTable.day,
@@ -41,6 +43,7 @@ export const StudentHome = () => {
             <div className="flex justify-center">
                 {userData?.uid}
                 {userData?.password}
+                {userData?.name}
             </div>
         </div>
         <div className="flex-col justify-center bg-blue-200 w-2/5 p-12 m-12 rounded-lg">
