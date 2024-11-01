@@ -19,15 +19,6 @@ app.get("/", (req,res) => {
 app.use("/lmsapi", lmsapiRouter);
 app.use("/dbapi", dbRouter);
 
-app.post("/signin", (req : express.Request, res : express.Response) => {
-  const { username, password }: { username: string; password: string } = req.body;
-
-  const user = User.findOne({
-    uid : username
-  });
-
-  
-})
 
 app.listen(PORT, () => {
   console.log(`server started on ${PORT}`);

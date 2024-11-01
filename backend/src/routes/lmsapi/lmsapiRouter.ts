@@ -16,10 +16,8 @@ const baseUrl = process.env.BASE_URL || "";
 // ONE SINGLE Route to send UID,PASSWORD to, will send session id as a response and deliver a captcha.
 // ALSO updates User collection in getCaptcha middleware.
 lmsapiRouter.get("/", [startSession, getCaptcha] , async (req : express.Request ,res : any) => {
-    // res.send(res.session);
     console.log("captured captcha please respond with post.")
     res.send(res.session);
-
 })
 
 // ONE SINGLE Route to POST, send session ID and captcha to LOGIN, get your timetable and student detials.
@@ -105,13 +103,13 @@ async function submitCaptcha(req : express.Request ,res : any ,next : express.Ne
     }
     else {
       console.log("user not found");
-      const newTT = new User({
+      const newUser = new User({
         uid: studentUID,
         password : password,
         name : studentName,
         timetable : timetableObj
       });
-      await newTT.save();
+      await newUser.save();
       console.log("new time table saved for " + studentUID);
     }
 
