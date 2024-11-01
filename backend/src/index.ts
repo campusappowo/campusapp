@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { lmsapiRouter } from "./routes/lmsapi/lmsapiRouter";
 import { User } from "./db/db";
+import { dbRouter } from "./routes/dbapi/dbapiRouter";
 
 const app = express();
 app.use(express.json());
@@ -16,6 +17,7 @@ app.get("/", (req,res) => {
 });
 
 app.use("/lmsapi", lmsapiRouter);
+app.use("/dbapi", dbRouter);
 
 app.listen(PORT, () => {
   console.log(`server started on ${PORT}`);
