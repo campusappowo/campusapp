@@ -1,5 +1,5 @@
 import express from "express";
-import { TimeTable, User } from "../../db/db";
+import { User } from "../../db/db";
 
 export const dbRouter = express.Router();
 
@@ -12,7 +12,7 @@ dbRouter.get("/details", async (req,res) => {
     const user = await User.findOne({
         uid : '21BCS5724'
     })
-    const timetableResponse = await TimeTable.findOne({
+    const timetableResponse = await User.findOne({
         uid: '21BCS5724'
     })
 

@@ -3,7 +3,7 @@ import { Browser, Page } from "puppeteer";
 import { v4 as uuidv4 } from "uuid";
 import createBrowserAndPage from "./lmsapiHelpers/createBrowserAndPage";
 import { config } from "dotenv";
-import { TimeTable, User } from "../../db/db";
+import { User } from "../../db/db";
 import { getDetails } from "./lmsapiHelpers/getDetails";
 
 export const lmsapiRouter = express.Router();
@@ -16,8 +16,10 @@ const baseUrl = process.env.BASE_URL || "";
 // ONE SINGLE Route to send UID,PASSWORD to, will send session id as a response and deliver a captcha.
 // ALSO updates User collection in getCaptcha middleware.
 lmsapiRouter.get("/", [startSession, getCaptcha] , async (req : express.Request ,res : any) => {
-    res.send(res.session);
+    // res.send(res.session);
     console.log("captured captcha please respond with post.")
+    res.send(res.session);
+
 })
 
 // ONE SINGLE Route to POST, send session ID and captcha to LOGIN, get your timetable and student detials.
@@ -30,6 +32,9 @@ lmsapiRouter.post("/", [submitCaptcha], (req : express.Request, res : any) => {
         Timetable : res.Timetable
     });
 })
+
+
+
 
 // Start Session Middleware, to create a new browser session for each user.
 async function startSession(req : express.Request ,res : any ,next : express.NextFunction) {
@@ -53,23 +58,6 @@ async function getCaptcha(req : express.Request ,res : any ,next : express.NextF
     if (!session) {
       return res.status(400).json({ error: "Session not found" });
     }
-
-    const user = await User.findOne({
-      uid : userId
-    })
-
-    if(user){
-      // ADD LOGIC FOR WHAT TO DO WHEN USER EXISTS
-    } 
-    else { // WHEN USER DOES NOT EXIST IN DB WITH THE PROVIDED userId
-      const newUser = new User({
-        uid: userId,
-        password : password
-      })
-
-      await newUser.save();
-      console.log("created!")
-    }
   
     const { page } = session;
   
@@ -90,8 +78,9 @@ async function getCaptcha(req : express.Request ,res : any ,next : express.NextF
 }
 
 // submit captcha middleware, updates timetable and shit
+// TODO : DEAL WITH WRONG CAPTCHA AND/OR WRONG ID PASSWORD
 async function submitCaptcha(req : express.Request ,res : any ,next : express.NextFunction) {
-    const { sessionId, captcha } = req.body;
+    const { userId,password,sessionId, captcha } = req.body;
     const session = sessions.get(sessionId);
   
     if (!session) {
@@ -106,16 +95,19 @@ async function submitCaptcha(req : express.Request ,res : any ,next : express.Ne
     res.Name = studentName;
     res.Timetable = timetableObj;
 
-    const TT = await TimeTable.findOne({
+    const user = await User.findOne({
       uid : studentUID
     });
 
-    if(TT) {
-      
+    if(user) {
+      console.log("user found");
+      // WHAT TO DO IF STUDENT ALREADY EXISTS
     }
     else {
-      const newTT = new TimeTable({
+      console.log("user not found");
+      const newTT = new User({
         uid: studentUID,
+        password : password,
         name : studentName,
         timetable : timetableObj
       });
