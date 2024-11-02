@@ -5,6 +5,7 @@ import createBrowserAndPage from "./lmsapiHelpers/createBrowserAndPage";
 import { config } from "dotenv";
 import { User } from "../../db/db";
 import { getDetails } from "./lmsapiHelpers/getDetails";
+import { verify } from "jsonwebtoken";
 
 export const lmsapiRouter = express.Router();
 
@@ -12,6 +13,21 @@ const sessions = new Map<string, { browser: Browser; page: Page }>();
 
 config();
 const baseUrl = process.env.BASE_URL || "";
+
+lmsapiRouter.use("/*", (req,res : any,next) => {
+  const authHeaders = req.headers.authorization;
+  if(!authHeaders) {
+    return res.send("Not logged in");
+  }
+
+  const token = authHeaders.split(' ')[1];
+  const payload = verify(token, process.env.JWT_SECRET || 'SECRET');
+
+  res.payload = payload;
+
+  next();
+
+})
 
 // ONE SINGLE Route to send UID,PASSWORD to, will send session id as a response and deliver a captcha.
 // ALSO updates User collection in getCaptcha middleware.
@@ -50,7 +66,7 @@ async function startSession(req : express.Request ,res : any ,next : express.Nex
 
 // Get captcha middleware, to get captcha delivered, uses userId and Password.
 async function getCaptcha(req : express.Request ,res : any ,next : express.NextFunction) {
-    const { userId, password } = req.body;
+    const { userId, password } = res.payload
     const session = sessions.get(res.session); // Getting Session directly from a res variable that we stored in the prev middleware, i.e startSession
 
     if (!session) {
@@ -78,7 +94,8 @@ async function getCaptcha(req : express.Request ,res : any ,next : express.NextF
 // submit captcha middleware, updates timetable and shit
 // TODO : DEAL WITH WRONG CAPTCHA AND/OR WRONG ID PASSWORD
 async function submitCaptcha(req : express.Request ,res : any ,next : express.NextFunction) {
-    const { userId,password,sessionId, captcha } = req.body;
+    const {userId,password} = res.payload;
+    const { sessionId, captcha } = req.body;
     const session = sessions.get(sessionId);
   
     if (!session) {

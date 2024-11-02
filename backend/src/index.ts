@@ -2,11 +2,15 @@ import express from "express";
 import cors from "cors";
 import { lmsapiRouter } from "./routes/lmsapi/lmsapiRouter";
 import { User } from "./db/db";
+import { config } from "dotenv";
 import { dbRouter } from "./routes/dbapi/dbapiRouter";
+import { sign } from "jsonwebtoken";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+config();
+
 
 const PORT = process.env.PORT || 3000;
 
@@ -30,7 +34,10 @@ app.post("/signin", async (req,res) => {
 
   if(user) {
     if (password === user.password){
-      res.send("successful login");
+      const token = sign({ userId : user.uid, password : password }, process.env.JWT_SECRET || 'SECRET');
+      return res.json({
+        jwt : token
+      })
     }
     else {
       res.send("Wrong password");
@@ -56,8 +63,10 @@ app.post("/signup",async (req,res) => {
     res.send('User already exists pls signin');
   }
   else {
-    res.send("");
-    // TODO ADD LOGIN FOR SIGNING UP
+    const token = sign({ id : userId, password : password}, process.env.JWT_SECRET || 'SECRET');
+    return res.json({
+      token : token
+    })
   }
 })
 
