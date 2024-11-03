@@ -5,7 +5,7 @@ import { config } from "dotenv";
 
 config();
 
-export const dbRouter = express.Router();
+export const dbRouter = express.Router(); 
 
 const dayNames: Array<'Sun' | 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat'>  = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -15,7 +15,7 @@ dbRouter.use("/*", async (req,res : any,next) => {
     if(!authHeaders) {
         return res.send({
             msg : "not logged in desu"
-        })
+        }) 
     }
 
     const token = authHeaders.split(' ')[1];
@@ -26,21 +26,23 @@ dbRouter.use("/*", async (req,res : any,next) => {
 })
 
 dbRouter.get("/details", async (req,res : any) => {
-
     const today = dayNames[new Date().getDay()];
 
-    console.log(res.payload.password)
-    
-    const user = await User.findOne({
-        uid : res.payload.id
+    const user = await User.findOne({ 
+        uid : res.payload.userId
     })
 
-    const timeTable = {
-        day : today,
-        // @ts-expect-error
-        schedule : (user.timetable[today as keyof typeof user.timetable])
+    if(user) {
+        const timeTable = {
+            day : today,
+            // @ts-expect-error
+            schedule : (user.timetable[today as keyof typeof user.timetable])
+        }
+        res.json({user , timeTable});
+    }
+    else {
+        res.json({user : "EMPTY"})
     }
     
-    res.json({user , timeTable});
 })
 

@@ -13,9 +13,13 @@ const sessions = new Map<string, { browser: Browser; page: Page }>();
 
 config();
 const baseUrl = process.env.BASE_URL || "";
+const dayNames: Array<'Sun' | 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat'>  = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 
 lmsapiRouter.use("/*", (req,res : any,next) => {
+
   const authHeaders = req.headers.authorization;
+
   if(!authHeaders) {
     return res.send("Not logged in");
   }
@@ -29,7 +33,7 @@ lmsapiRouter.use("/*", (req,res : any,next) => {
 
 })
 
-// ONE SINGLE Route to send UID,PASSWORD to, will send session id as a response and deliver a captcha.
+// ONE SINGLE Route to send UID,PASSWORD to,  will send session id as a response and deliver a captcha.
 // ALSO updates User collection in getCaptcha middleware.
 lmsapiRouter.get("/", [startSession, getCaptcha] , async (req : express.Request ,res : any) => {
     console.log("captured captcha please respond with post.")
@@ -40,10 +44,21 @@ lmsapiRouter.get("/", [startSession, getCaptcha] , async (req : express.Request 
 // also update timetable collection.
 lmsapiRouter.post("/", [submitCaptcha], (req : express.Request, res : any) => {
     console.log("Finished getting student details and shit");
+
+
+    const today = dayNames[new Date().getDay()];
+
+    const tt = res.Timetable;
+    const timeTable = {
+      day : today,
+      schedule : (tt[today as keyof typeof tt])
+  }
     res.send({
-        UID : res.UID,
-        Name : res.Name,
-        Timetable : res.Timetable
+        user : {
+          uid : res.UID,
+          name : res.Name
+        },
+        timeTable : timeTable
     });
 })
 
@@ -66,6 +81,7 @@ async function startSession(req : express.Request ,res : any ,next : express.Nex
 
 // Get captcha middleware, to get captcha delivered, uses userId and Password.
 async function getCaptcha(req : express.Request ,res : any ,next : express.NextFunction) {
+
     const { userId, password } = res.payload
     const session = sessions.get(res.session); // Getting Session directly from a res variable that we stored in the prev middleware, i.e startSession
 
@@ -94,6 +110,8 @@ async function getCaptcha(req : express.Request ,res : any ,next : express.NextF
 // submit captcha middleware, updates timetable and shit
 // TODO : DEAL WITH WRONG CAPTCHA AND/OR WRONG ID PASSWORD
 async function submitCaptcha(req : express.Request ,res : any ,next : express.NextFunction) {
+
+    console.log("IN SUBMIT CAPTCHA" + res.payload);
     const {userId,password} = res.payload;
     const { sessionId, captcha } = req.body;
     const session = sessions.get(sessionId);

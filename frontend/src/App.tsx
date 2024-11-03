@@ -1,21 +1,19 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import './App.css'
-import { Appbar } from './components/Appbar'
-import { AppSidebar } from './components/appSidebar'
-import { SidebarProvider } from './components/ui/sidebar'
 import { StudentHome } from './pages/StudentHome'
+import { Signup } from './pages/Signup'
+import { Signin } from './pages/Signin'
 
 function App() {
   return (
     <>
-      <SidebarProvider defaultOpen={true}>
-        <AppSidebar/>
-        <div className='flex flex-col w-full'>
-        <Appbar/>
-        <StudentHome/>
-        </div>
-        
-      </SidebarProvider>
-
+      <BrowserRouter>
+        <Routes>
+          <Route path='/home' element={<StudentHome/>}/>
+          <Route path='/signup' element={<Signup/>}/>
+          <Route path='/signin' element={<Signin/>}/>
+        </Routes>
+      </BrowserRouter>
       
     </>
   )

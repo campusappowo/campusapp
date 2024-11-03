@@ -8,7 +8,11 @@ import { sign } from "jsonwebtoken";
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin : ["http://localhost:5173"],
+  allowedHeaders : ["Authorization", "Content-Type"], 
+  credentials : true
+}));
 config();
 
 
@@ -40,11 +44,11 @@ app.post("/signin", async (req,res) => {
       })
     }
     else {
-      res.send("Wrong password");
+      res.status(404).send("Wrong password");
     }
   }
   else {
-    res.send("User doesnt exist please signin");
+    res.status(411).send("User doesnt exist please signin");
   }
 })
 
@@ -60,12 +64,12 @@ app.post("/signup",async (req,res) => {
   });
 
   if(user){
-    res.send('User already exists pls signin');
+    res.status(303).send('User already exists pls signin');
   }
   else {
-    const token = sign({ id : userId, password : password}, process.env.JWT_SECRET || 'SECRET');
-    return res.json({
-      token : token
+    const token = sign({ userId : userId, password : password}, process.env.JWT_SECRET || 'SECRET');
+    return res.json({ 
+      jwt : token
     })
   }
 })
