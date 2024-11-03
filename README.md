@@ -95,23 +95,25 @@ there are 3 basic routes
 
 ### FOR 3 or "/dbapi" ROUTE : 
 
- ONLY 1 ROUTE "/getDetails"
-
- Middleware 1 : Same Verification middleware, get JWT decode it and forward userId and password to the /getDetails request.
-
- /getDetails => Nothing much, gets the data for the user from the DB for the user if they already exist in the DB.
+    ONLY 1 ROUTE "/getDetails"
+   
+    Middleware 1 : Same Verification middleware, get JWT decode it and forward userId and password to the /getDetails request.
+   
+    /getDetails => Nothing much, gets the data for the user from the DB for the user if they already exist in the DB.
 
  # FRONTEND
 
-/signin => signin form, return JWT on signin uses ":3000/signin"
-/signup => signup form, return JWT on signup uses ":3000/signup" fix this route..
-/home => Fetches data from /dbapi if user exists, otherwise
-fetches data from /lmsapi and stored in the db. Also houses
-the captcha element at the moment. If this is the first time
-the user is logging in he will need to enter a captcha to get access to his details
-Also need a way to allow existing users to click on a refresh button which will
-prompt them with a captcha input and let them refetch fresh data from uims instead
-of the DB or (hopefully redis if we can implement it later.)
+   /signin => signin form, return JWT on signin uses ":3000/signin"
+   
+   /signup => signup form, return JWT on signup uses ":3000/signup" fix this route..
+   
+   /home => Fetches data from /dbapi if user exists, otherwise
+   fetches data from /lmsapi and stored in the db. Also houses
+   the captcha element at the moment. If this is the first time
+   the user is logging in he will need to enter a captcha to get access to his details
+   Also need a way to allow existing users to click on a refresh button which will
+   prompt them with a captcha input and let them refetch fresh data from uims instead
+   of the DB or (hopefully redis if we can implement it later.)
 
 
 # BIG TODOS:
