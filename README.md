@@ -28,10 +28,7 @@ there are 3 basic routes
     Theres a basic /signin and /signup route
 
     for /signin -> just give a username and password and it will
-    return you a JWT. Maybe we should change this and only
-    return a JWT if the user exists in the DB?
-    Also handle some edge cases if they exist? I cant think
-    of any right now.
+    return you a JWT. 
 
     for /signup -> Same give a username and password and it will
     return you a JWT. gotta do the above tasks here too.
