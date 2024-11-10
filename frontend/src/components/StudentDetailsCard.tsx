@@ -1,6 +1,7 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
 
+const backendURL = import.meta.env.BASE_URL;
 
 export const StudentCards = () => {
     interface userDetails {
@@ -18,6 +19,7 @@ export const StudentCards = () => {
     const [timeTable, setTT] = useState<timeTable | null>()
     const [freshData, setFreshData] = useState(false);
     const [captcha, setCaptcha] = useState("");
+    const [captchaUrl, setCaptchaUrl] = useState("");
 
 
     // IMPLEMENT REDIS FOR FAST DATA FETCHING, IMPLEMENT CAPTCHA BHEJNA LENA, 
@@ -33,7 +35,7 @@ export const StudentCards = () => {
     }, [freshData]);
 
     const getDetails = async () => {
-        const response = await axios.get("http://localhost:3000/dbapi/details", {
+        const response = await axios.get(backendURL+"/dbapi/details", {
             headers : {
                 Authorization : localStorage.getItem("token")
             },
@@ -58,19 +60,20 @@ export const StudentCards = () => {
     }
 
     const getFreshDetails = async () => {
-        const firstResponse = await axios.get("http://localhost:3000/lmsapi", {
+        const firstResponse = await axios.get(backendURL+"/lmsapi/", {
             headers : {
                 Authorization : localStorage.getItem("token")
             },
             withCredentials : true
         });
         
-        localStorage.setItem("PupSession", firstResponse.data);
+        localStorage.setItem("PupSession", firstResponse.data.session);
+        setCaptchaUrl(firstResponse.data.captchaUrl);
         alert("please send captcha");
     }
 
     async function handleSendCaptcha() {
-        const secondResponse = await axios.post("http://localhost:3000/lmsapi", {
+        const secondResponse = await axios.post(backendURL+"/lmsapi/", {
             sessionId: localStorage.getItem("PupSession"),
             captcha: captcha,
         },{
@@ -115,6 +118,9 @@ export const StudentCards = () => {
         </div>
 
         <div className="flex flex-col justify-center items-center m-5 p-5 bg-blue-200">
+
+            { captchaUrl !== "" ? <img src={captchaUrl} alt="captcha"/> : "loading"}
+            
             <input type="text" placeholder="captcha" className="border-4" onChange={(e) => {
                     setCaptcha(e.target.value);
             }}/>

@@ -2,15 +2,18 @@ import { Appbar } from "@/components/Appbar"
 import axios from "axios";
 import { useState } from "react"
 
+const backendURL = import.meta.env.BASE_URL;
 
 export const Signin = () => {
+
+    
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
     async function handleClick() {
         try{
-            const res = await axios.post("http://localhost:3000/signin", { userId : username, password : password })
+            const res = await axios.post(backendURL+"/signin", { userId : username, password : password })
             localStorage.setItem("token", "bearer "+res.data.jwt);
             alert("Successful sign in please go to home")
         }catch (err) {

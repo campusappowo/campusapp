@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose
+import { config } from "dotenv";
 
-mongoose.connect("mongodb://localhost:27017/campusapp")
+config();
+mongoose.connect(process.env.MONGO_DB_URL || "");
 
 const userSchema = new Schema({
     uid : String,

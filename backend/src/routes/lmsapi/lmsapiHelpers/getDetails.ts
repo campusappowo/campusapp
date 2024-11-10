@@ -5,6 +5,10 @@ export async function getDetails(page : Page, captcha : any, baseUrl : string){
     await page.type("#txtcaptcha", captcha);
     await page.click("#btnLogin");
     await page.waitForNavigation();
+
+    console.log("Clicked login")
+
+    await page.screenshot({path : "pagess.png"})
   
     await page.goto(`${baseUrl}frmStudentProfile.aspx`);
     await page.waitForSelector("#lbstuUID");

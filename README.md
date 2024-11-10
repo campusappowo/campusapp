@@ -10,7 +10,7 @@ HMMM lets see ill try to explain how to run the code, first time writing markdow
 #### cd to backend and go node dist/index.js or if u want to be fancy shmancy and do dev i have the nodemon for tsc installed as a dependency just run the command 
 
 ```
-tsc-watch --onSuccess "node ./dist/server.js"
+npx tsc-watch --onSuccess "node ./dist/index.js"
 ```
 
 #### cd to front and basic

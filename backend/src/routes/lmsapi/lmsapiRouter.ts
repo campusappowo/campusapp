@@ -7,11 +7,19 @@ import { User } from "../../db/db";
 import { getDetails } from "./lmsapiHelpers/getDetails";
 import { verify } from "jsonwebtoken";
 
+import { v2 as cloudinary } from "cloudinary"
+
 export const lmsapiRouter = express.Router();
 
 const sessions = new Map<string, { browser: Browser; page: Page }>();
 
 config();
+
+cloudinary.config({
+  cloud_name : process.env.CLOUD_NAME,
+  api_key : process.env.CLOUD_API_KEY,
+  api_secret : process.env.CLOUD_API_SECRET
+})
 const baseUrl = process.env.BASE_URL || "";
 const dayNames: Array<'Sun' | 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat'>  = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -37,7 +45,10 @@ lmsapiRouter.use("/*", (req,res : any,next) => {
 // ALSO updates User collection in getCaptcha middleware.
 lmsapiRouter.get("/", [startSession, getCaptcha] , async (req : express.Request ,res : any) => {
     console.log("captured captcha please respond with post.")
-    res.send(res.session);
+    res.send({
+      session : res.session,
+      captchaUrl : res.captchaUrl
+  }); 
 })
 
 // ONE SINGLE Route to POST, send session ID and captcha to LOGIN, get your timetable and student detials.
@@ -103,6 +114,9 @@ async function getCaptcha(req : express.Request ,res : any ,next : express.NextF
     
     await captchaElement?.screenshot({ path: "captcha.png" });
     console.log("Captcha sent to client");
+
+    const captchaUrl = await cloudinary.uploader.upload("captcha.png");
+    res.captchaUrl = captchaUrl.url;
 
     next();
 }
