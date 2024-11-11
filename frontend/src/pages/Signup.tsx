@@ -2,8 +2,7 @@ import { Appbar } from "@/components/Appbar"
 import axios from "axios";
 import { useState } from "react";
 
-const backendURL = import.meta.env.BASE_URL;
-
+const backendURL = import.meta.env.VITE_BASE_URL;
 export const Signup = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");

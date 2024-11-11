@@ -1,7 +1,7 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
 
-const backendURL = import.meta.env.BASE_URL;
+const backendURL = import.meta.env.VITE_BASE_URL;
 
 export const StudentCards = () => {
     interface userDetails {
